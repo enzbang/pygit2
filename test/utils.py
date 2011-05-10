@@ -39,7 +39,8 @@ import pygit2
 class BaseTestCase(unittest.TestCase):
 
     def tearDown(self):
-        shutil.rmtree(self._temp_dir)
+        # ??? Avoid getting "Access denied" on windows
+        shutil.rmtree(self._temp_dir, ignore_errors=True)
 
     def assertRaisesWithArg(self, exc_class, arg, func, *args, **kwargs):
         try:
@@ -55,6 +56,7 @@ def open_repo(repo_dir):
     temp_dir = tempfile.mkdtemp()
     temp_repo_path = os.path.join(temp_dir, repo_dir)
     shutil.copytree(repo_path, temp_repo_path)
+    temp_repo_path = temp_repo_path.replace('\\', '/')
     return temp_dir, pygit2.Repository(temp_repo_path)
 
 
@@ -75,4 +77,5 @@ class RepoTestCase(BaseTestCase):
         tar.close()
         self._temp_dir = temp_dir
         temp_repo_path = os.path.join(temp_dir, repo_dir, '.git')
+        temp_repo_path = temp_repo_path.replace('\\', '/')
         self.repo = pygit2.Repository(temp_repo_path)
